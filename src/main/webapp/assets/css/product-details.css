@@ -1,0 +1,52 @@
+@charset "UTF-8";
+
+body {
+    font-family: Arial;
+    background: #f5f5f5;
+    margin: 0;
+}
+
+.product-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 50px;
+}
+
+.product-card {
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    width: 600px;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+
+.product-card img {
+    width: 250px;
+    height: 250px;
+    object-fit: cover;
+    margin-bottom: 20px;
+}
+
+.product-card h2 {
+    margin-bottom: 10px;
+}
+
+.product-card p {
+    margin: 5px 0;
+}
+
+.discount {
+    color: green;
+    font-weight: bold;
+}
+
+.btn {
+    background: black;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    margin-top: 15px;
+    cursor: pointer;
+}
