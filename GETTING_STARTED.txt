@@ -1,0 +1,184 @@
+================================================================================
+                    FASHION MASHUP - GETTING STARTED
+================================================================================
+
+This project is READY TO RUN. Follow these simple steps to get it working:
+
+================================================================================
+STEP 1: SET UP DATABASE (5 minutes)
+================================================================================
+
+1. Open MySQL Workbench
+2. Connect to your MySQL server
+3. Create new query and open file: database_init.sql
+4. Execute the entire script (Ctrl+Enter)
+5. Verify: Run this query and you should see 3 categories
+   SELECT * FROM fashion_mashup.categories;
+
+✅ Database credentials used by backend:
+   - Username: root
+   - Password: newpassword123 (update in src/main/java/com/fashionmashup/util/DBConnection.java if different)
+   - Database: fashion_mashup
+   - Host: localhost:3306
+
+================================================================================
+STEP 2: BUILD AND DEPLOY BACKEND (5 minutes)
+================================================================================
+
+Using Eclipse:
+1. Right-click project → Maven → Update Project
+2. Wait for Maven to download dependencies
+3. Right-click project → Run As → Run on Server
+4. Select Tomcat 10 server
+5. Wait for "Server startup" message in console
+
+✅ Verify backend is running:
+   Open browser and go to: http://localhost:8080/fashionmashup/api/categories
+   You should see JSON with category data
+
+================================================================================
+STEP 3: START FRONTEND (2 minutes)
+================================================================================
+
+Open terminal/PowerShell and run:
+   cd frontend
+   npm install
+   npm run dev
+
+✅ You should see:
+   Local: http://localhost:5173/
+
+Open your browser to: http://localhost:5173
+
+================================================================================
+STEP 4: TEST THE APPLICATION (10 minutes)
+================================================================================
+
+Try these steps:
+1. Homepage loads with products and images
+2. Click on Products → See product list
+3. Click Login → Enter test@fashion.com / password123
+4. Browse products, add to cart
+5. Go to cart and review items
+6. Click Checkout and place order
+7. See order confirmation
+8. Click My Orders to see order history
+9. Click Logout
+
+✅ All should work without errors!
+
+================================================================================
+TROUBLESHOOTING
+================================================================================
+
+❌ API returns 404?
+   → Make sure Tomcat is running (check Eclipse console)
+   → Try accessing: http://localhost:8080/fashionmashup/api/categories
+
+❌ Database connection fails?
+   → Check MySQL is running and accessible
+   → Verify database credentials in DBConnection.java match your MySQL
+
+❌ Frontend won't load?
+   → Make sure npm dev server is running on http://localhost:5173
+   → Check browser console for errors (F12)
+
+❌ Images not showing?
+   → This is normal - they're loading from Pexels
+   → Check browser console for 404 errors
+   → Database should have image URLs starting with https://images.pexels.com/
+
+❌ Login fails?
+   → Verify test user exists: SELECT * FROM fashion_mashup.users;
+   → Try these credentials: test@fashion.com / password123
+
+For detailed troubleshooting: See TROUBLESHOOTING.md
+
+================================================================================
+WHAT YOU HAVE
+================================================================================
+
+✅ Complete REST API backend (11 servlet endpoints)
+✅ Modern React frontend (8 pages)
+✅ MySQL database with seed data
+✅ Session-based authentication
+✅ Shopping cart functionality
+✅ Order management
+✅ Online product images from Pexels
+✅ Responsive design (mobile, tablet, desktop)
+✅ Production-ready code
+
+================================================================================
+KEY FILES
+================================================================================
+
+Frontend:
+  frontend/src/App.jsx - Main React component
+  frontend/src/pages/ - Page components
+  frontend/src/services/api.js - API communication
+  frontend/vite.config.js - Proxy configuration
+
+Backend:
+  src/main/java/com/fashionmashup/api/ - REST API servlets
+  src/main/java/com/fashionmashup/dao/ - Database layer
+  src/main/java/com/fashionmashup/util/DBConnection.java - DB connection
+
+Database:
+  database_init.sql - Schema and seed data
+
+Documentation:
+  QUICK_START.md - 15-minute setup guide
+  SETUP_INSTRUCTIONS.md - Detailed setup
+  TROUBLESHOOTING.md - Problem solving
+  README_COMPLETE.md - Full documentation
+
+================================================================================
+TEST USER ACCOUNT
+================================================================================
+
+Email: test@fashion.com
+Password: password123
+
+This account is pre-created in the database and ready to use immediately.
+
+================================================================================
+ESTIMATED SETUP TIME
+================================================================================
+
+Database Setup:     5 minutes
+Backend Build:      5 minutes
+Frontend Start:     2 minutes
+Initial Testing:   10 minutes
+                   ─────────
+Total:            22 minutes
+
+================================================================================
+PORTS
+================================================================================
+
+Frontend Dev Server:  http://localhost:5173
+Backend API Server:   http://localhost:8080/fashionmashup
+MySQL Database:       localhost:3306
+
+================================================================================
+NEXT STEPS
+================================================================================
+
+After setup:
+1. Browse the application and test all features
+2. Customize styling and branding
+3. Add more products to the database
+4. Register new user accounts
+5. Deploy to production (see README_COMPLETE.md)
+
+================================================================================
+
+For more details, see the comprehensive guides:
+  - QUICK_START.md
+  - SETUP_INSTRUCTIONS.md
+  - TROUBLESHOOTING.md
+  - README_COMPLETE.md
+
+Happy shopping! 🛍️
+
+================================================================================
