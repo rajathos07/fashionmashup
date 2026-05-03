@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { orderAPI } from '../services/api'
 import './Orders.css'
 
 function Orders() {
@@ -12,17 +13,14 @@ function Orders() {
 
   const fetchOrders = async () => {
     try {
-      const response = await fetch('/api/orders', {
-        credentials: 'include'
-      })
-      if (response.ok) {
-        const data = await response.json()
-        setOrders(Array.isArray(data) ? data : [])
-      } else {
-        setError('Failed to load orders')
-      }
+      const data = await orderAPI.getOrders()
+      setOrders(Array.isArray(data) ? data : [])
     } catch (err) {
-      setError('Error loading orders')
+      if (err.message.includes('401') || err.message === 'Not authenticated') {
+        setError('Please login to view your orders')
+      } else {
+        setError('Error loading orders')
+      }
       console.error(err)
     } finally {
       setLoading(false)
@@ -57,15 +55,15 @@ function Orders() {
                     <div key={item.id} className="order-item">
                       <img
                         src={item.product?.image || 'https://images.pexels.com/photos/2769274/pexels-photo-2769274.jpeg?auto=compress&cs=tinysrgb&w=600'}
-                        alt={item.product?.name}
+                        alt={item.product?.name || item.name}
                       />
                       <div className="item-info">
-                        <p className="item-name">{item.product?.name}</p>
+                        <p className="item-name">{item.product?.name || item.name}</p>
                         <p className="item-size">Size: {item.size}</p>
                       </div>
                       <div className="item-qty">
                         <p>Qty: {item.quantity}</p>
-                        <p className="item-price">SAR {item.product?.price.toFixed(2)}</p>
+                        <p className="item-price">SAR {(item.product?.price || item.unitPrice).toFixed(2)}</p>
                       </div>
                     </div>
                   ))}

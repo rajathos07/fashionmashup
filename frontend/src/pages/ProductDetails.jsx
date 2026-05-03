@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { productAPI, cartAPI } from '../services/api'
 import './ProductDetails.css'
 
 function ProductDetails() {
@@ -18,15 +19,8 @@ function ProductDetails() {
 
   const fetchProduct = async () => {
     try {
-      const response = await fetch(`/api/products/${id}`, {
-        credentials: 'include'
-      })
-      if (response.ok) {
-        const data = await response.json()
-        setProduct(data)
-      } else {
-        setError('Product not found')
-      }
+      const data = await productAPI.getById(id)
+      setProduct(data)
     } catch (err) {
       setError('Error loading product')
       console.error(err)
@@ -43,25 +37,15 @@ function ProductDetails() {
 
     setIsAdding(true)
     try {
-      const response = await fetch('/api/addToCart', {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          productId: product.id,
-          quantity,
-          size: selectedSize
-        })
-      })
-
-      if (response.ok) {
-        navigate('/cart')
-      } else {
-        alert('Failed to add to cart')
-      }
+      await cartAPI.addToCart(product.id, quantity, selectedSize)
+      navigate('/cart')
     } catch (err) {
-      console.error('Error adding to cart:', err)
-      alert('Error adding to cart')
+      if (err.message === 'Not authenticated' || err.message.includes('401')) {
+        alert('Please login to add items to cart')
+        navigate('/login')
+      } else {
+        alert('Failed to add to cart: ' + err.message)
+      }
     } finally {
       setIsAdding(false)
     }
@@ -87,7 +71,7 @@ function ProductDetails() {
           <p className="brand">{product.brand || 'Fashion Mashup'}</p>
 
           <div className="rating">
-            <span className="stars">★★★★★</span>
+            <span className="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</span>
             <span className="reviews">(24 reviews)</span>
           </div>
 
@@ -132,7 +116,7 @@ function ProductDetails() {
           <div className="quantity-section">
             <h3>Quantity</h3>
             <div className="quantity-selector">
-              <button onClick={() => setQuantity(Math.max(1, quantity - 1))}>−</button>
+              <button onClick={() => setQuantity(Math.max(1, quantity - 1))}>-</button>
               <input type="number" value={quantity} readOnly />
               <button onClick={() => setQuantity(quantity + 1)}>+</button>
             </div>
@@ -146,7 +130,7 @@ function ProductDetails() {
             >
               {isAdding ? 'Adding...' : 'Add to Cart'}
             </button>
-            <button className="wishlist-add-btn">♡ Add to Wishlist</button>
+            <button className="wishlist-add-btn">&#9825; Add to Wishlist</button>
           </div>
 
           <div className="product-details-info">

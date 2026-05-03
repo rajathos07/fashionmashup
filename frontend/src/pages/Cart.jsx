@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { cartAPI } from '../services/api'
 import './Cart.css'
 
 function Cart() {
@@ -14,17 +15,14 @@ function Cart() {
 
   const fetchCart = async () => {
     try {
-      const response = await fetch('/api/cart', {
-        credentials: 'include'
-      })
-      if (response.ok) {
-        const data = await response.json()
-        setCartItems(data.items || [])
-      } else {
-        setError('Failed to load cart')
-      }
+      const data = await cartAPI.getCart()
+      setCartItems(data.items || [])
     } catch (err) {
-      setError('Error loading cart')
+      if (err.message.includes('401') || err.message === 'Not authenticated') {
+        setError('Please login to view your cart')
+      } else {
+        setError('Error loading cart')
+      }
       console.error(err)
     } finally {
       setLoading(false)
@@ -33,12 +31,7 @@ function Cart() {
 
   const handleRemoveItem = async (cartItemId) => {
     try {
-      await fetch('/api/removeCart', {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ cartItemId })
-      })
+      await cartAPI.removeFromCart(cartItemId)
       fetchCart()
     } catch (err) {
       console.error('Error removing item:', err)
@@ -48,19 +41,14 @@ function Cart() {
   const handleQuantityChange = async (cartItemId, newQuantity) => {
     if (newQuantity < 1) return
     try {
-      await fetch(`/api/cart/${cartItemId}`, {
-        method: 'PUT',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ quantity: newQuantity })
-      })
+      await cartAPI.updateCartItem(cartItemId, newQuantity)
       fetchCart()
     } catch (err) {
       console.error('Error updating quantity:', err)
     }
   }
 
-  const subtotal = cartItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0)
+  const subtotal = cartItems.reduce((sum, item) => sum + ((item.product?.price || item.unitPrice) * item.quantity), 0)
   const tax = subtotal * 0.15
   const total = subtotal + tax
 
@@ -87,34 +75,34 @@ function Cart() {
                   <div key={item.id} className="cart-item">
                     <div className="item-product">
                       <img
-                        src={item.product.image || 'https://images.pexels.com/photos/2769274/pexels-photo-2769274.jpeg?auto=compress&cs=tinysrgb&w=600'}
-                        alt={item.product.name}
+                        src={item.product?.image || 'https://images.pexels.com/photos/2769274/pexels-photo-2769274.jpeg?auto=compress&cs=tinysrgb&w=600'}
+                        alt={item.product?.name}
                       />
                       <div className="item-details">
-                        <h3>{item.product.name}</h3>
+                        <h3>{item.product?.name}</h3>
                         <p className="item-size">Size: {item.size}</p>
                       </div>
                     </div>
 
                     <div className="item-price">
-                      SAR {item.product.price.toFixed(2)}
+                      SAR {(item.product?.price || item.unitPrice).toFixed(2)}
                     </div>
 
                     <div className="item-quantity">
-                      <button onClick={() => handleQuantityChange(item.id, item.quantity - 1)}>−</button>
+                      <button onClick={() => handleQuantityChange(item.id, item.quantity - 1)}>-</button>
                       <input type="number" value={item.quantity} readOnly />
                       <button onClick={() => handleQuantityChange(item.id, item.quantity + 1)}>+</button>
                     </div>
 
                     <div className="item-total">
-                      SAR {(item.product.price * item.quantity).toFixed(2)}
+                      SAR {((item.product?.price || item.unitPrice) * item.quantity).toFixed(2)}
                     </div>
 
                     <button
                       className="remove-btn"
                       onClick={() => handleRemoveItem(item.id)}
                     >
-                      ✕
+                      x
                     </button>
                   </div>
                 ))}
@@ -126,7 +114,7 @@ function Cart() {
             </>
           ) : (
             <div className="empty-cart">
-              <p>Your cart is empty</p>
+              <p>{error || 'Your cart is empty'}</p>
               <Link to="/products" className="continue-btn">Start Shopping</Link>
             </div>
           )}

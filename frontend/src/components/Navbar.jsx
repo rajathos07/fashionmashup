@@ -1,5 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
+import { authAPI } from '../services/api'
 import './Navbar.css'
 
 function Navbar({ user, setUser }) {
@@ -8,11 +9,13 @@ function Navbar({ user, setUser }) {
 
   const handleLogout = async () => {
     try {
-      await fetch('/api/logout', { method: 'POST', credentials: 'include' })
+      await authAPI.logout()
       setUser(null)
       navigate('/')
     } catch (error) {
       console.error('Logout failed:', error)
+      setUser(null)
+      navigate('/')
     }
   }
 
@@ -33,7 +36,7 @@ function Navbar({ user, setUser }) {
 
           <div className="nav-actions">
             <Link to="/cart" className="nav-link cart-link" onClick={() => setMobileMenuOpen(false)}>
-              <span className="cart-icon">🛒</span>
+              <span className="cart-icon">&#128722;</span>
               Cart
             </Link>
 
@@ -64,7 +67,7 @@ function Navbar({ user, setUser }) {
         </div>
 
         <button className="mobile-toggle" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-          ☰
+          &#9776;
         </button>
       </div>
     </nav>

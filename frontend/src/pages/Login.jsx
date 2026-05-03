@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import { authAPI } from '../services/api'
 import './Auth.css'
 
 function Login({ setUser }) {
@@ -15,24 +16,11 @@ function Login({ setUser }) {
     setLoading(true)
 
     try {
-      const response = await fetch('/api/login', {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      })
-
-      if (response.ok) {
-        const userData = await response.json()
-        setUser(userData)
-        navigate('/')
-      } else {
-        const data = await response.json()
-        setError(data.message || 'Login failed')
-      }
+      const userData = await authAPI.login(email, password)
+      setUser(userData)
+      navigate('/')
     } catch (err) {
-      setError('Network error. Please try again.')
-      console.error(err)
+      setError(err.message || 'Login failed')
     } finally {
       setLoading(false)
     }
@@ -67,7 +55,7 @@ function Login({ setUser }) {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              placeholder="••••••••"
+              placeholder="--------"
             />
           </div>
 

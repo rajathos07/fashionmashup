@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { cartAPI, orderAPI } from '../services/api'
 import './Checkout.css'
 
 function Checkout({ user }) {
@@ -24,14 +25,9 @@ function Checkout({ user }) {
 
   const fetchCartTotal = async () => {
     try {
-      const response = await fetch('/api/cart', {
-        credentials: 'include'
-      })
-      if (response.ok) {
-        const data = await response.json()
-        const total = data.items.reduce((sum, item) => sum + (item.product.price * item.quantity), 0)
-        setCartTotal(total * 1.15)
-      }
+      const data = await cartAPI.getCart()
+      const total = (data.items || []).reduce((sum, item) => sum + ((item.product?.price || item.unitPrice) * item.quantity), 0)
+      setCartTotal(total * 1.15)
     } catch (err) {
       console.error('Error fetching cart:', err)
     }
@@ -47,28 +43,17 @@ function Checkout({ user }) {
     setLoading(true)
 
     try {
-      const response = await fetch('/api/placeOrder', {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          shippingAddress: formData.address,
-          city: formData.city,
-          zipCode: formData.zipCode,
-          phone: formData.phone,
-          paymentMethod: 'credit_card'
-        })
+      const order = await orderAPI.placeOrder({
+        shippingAddress: formData.address + ', ' + formData.city + ' ' + formData.zipCode,
+        city: formData.city,
+        zipCode: formData.zipCode,
+        phone: formData.phone,
+        paymentMethod: 'credit_card'
       })
-
-      if (response.ok) {
-        const order = await response.json()
-        navigate('/order-success', { state: { orderId: order.id } })
-      } else {
-        alert('Failed to place order. Please try again.')
-      }
+      navigate('/order-success', { state: { orderId: order.id } })
     } catch (err) {
       console.error('Error placing order:', err)
-      alert('Error placing order')
+      alert('Error placing order: ' + err.message)
     } finally {
       setLoading(false)
     }

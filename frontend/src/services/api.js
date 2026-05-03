@@ -1,41 +1,87 @@
-import axios from 'axios'
+const API_BASE_URL = '/api'
 
-const API_BASE_URL = 'http://localhost:8080'
-
-const api = axios.create({
-  baseURL: API_BASE_URL,
-  withCredentials: true,
-  headers: {
-    'Content-Type': 'application/json'
+async function request(endpoint, options = {}) {
+  const config = {
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers
+    },
+    ...options
   }
-})
+
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, config)
+
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({}))
+    throw new Error(data.error || `Request failed with status ${response.status}`)
+  }
+
+  return response.json()
+}
 
 export const authAPI = {
-  login: (email, password) => api.post('/login', { email, password }),
-  register: (name, email, password) => api.post('/register', { name, email, password }),
-  logout: () => api.post('/logout'),
-  getCurrentUser: () => api.get('/user')
+  login: (email, password) =>
+    request('/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, password })
+    }),
+
+  register: (name, email, password) =>
+    request('/register', {
+      method: 'POST',
+      body: JSON.stringify({ name, email, password })
+    }),
+
+  logout: () =>
+    request('/logout', { method: 'POST' }),
+
+  getCurrentUser: () => request('/user')
 }
 
 export const productAPI = {
-  getAll: (params) => api.get('/products', { params }),
-  getById: (id) => api.get(`/products/${id}`),
-  getCategories: () => api.get('/categories')
+  getAll: (params) => {
+    const query = new URLSearchParams(params).toString()
+    return request(`/products${query ? '?' + query : ''}`)
+  },
+
+  getById: (id) => request(`/products/${id}`),
+
+  getCategories: () => request('/categories')
 }
 
 export const cartAPI = {
-  getCart: () => api.get('/cart'),
+  getCart: () => request('/cart'),
+
   addToCart: (productId, quantity, size) =>
-    api.post('/addToCart', { productId, quantity, size }),
-  removeFromCart: (cartItemId) => api.post(`/removeCart`, { cartItemId }),
+    request('/addToCart', {
+      method: 'POST',
+      body: JSON.stringify({ productId, quantity, size })
+    }),
+
+  removeFromCart: (cartItemId) =>
+    request('/removeCart', {
+      method: 'POST',
+      body: JSON.stringify({ cartItemId })
+    }),
+
   updateCartItem: (cartItemId, quantity) =>
-    api.put(`/cart/${cartItemId}`, { quantity })
+    request(`/cart/${cartItemId}`, {
+      method: 'PUT',
+      body: JSON.stringify({ quantity })
+    })
 }
 
 export const orderAPI = {
-  placeOrder: (orderData) => api.post('/placeOrder', orderData),
-  getOrders: () => api.get('/orders'),
-  getOrderById: (id) => api.get(`/orders/${id}`)
+  placeOrder: (orderData) =>
+    request('/placeOrder', {
+      method: 'POST',
+      body: JSON.stringify(orderData)
+    }),
+
+  getOrders: () => request('/orders'),
+
+  getOrderById: (id) => request(`/orders/${id}`)
 }
 
-export default api
+export default request

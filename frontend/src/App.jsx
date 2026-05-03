@@ -11,6 +11,7 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import Orders from './pages/Orders'
 import OrderSuccess from './pages/OrderSuccess'
+import { authAPI } from './services/api'
 import './App.css'
 
 function App() {
@@ -20,16 +21,10 @@ function App() {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const response = await fetch('/api/user', {
-          method: 'GET',
-          credentials: 'include'
-        })
-        if (response.ok) {
-          const userData = await response.json()
-          setUser(userData)
-        }
+        const userData = await authAPI.getCurrentUser()
+        setUser(userData)
       } catch (error) {
-        console.error('Auth check failed:', error)
+        setUser(null)
       } finally {
         setLoading(false)
       }

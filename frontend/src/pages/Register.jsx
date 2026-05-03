@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import { authAPI } from '../services/api'
 import './Auth.css'
 
 function Register({ setUser }) {
@@ -23,24 +24,11 @@ function Register({ setUser }) {
     setLoading(true)
 
     try {
-      const response = await fetch('/api/register', {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password })
-      })
-
-      if (response.ok) {
-        const userData = await response.json()
-        setUser(userData)
-        navigate('/')
-      } else {
-        const data = await response.json()
-        setError(data.message || 'Registration failed')
-      }
+      const userData = await authAPI.register(name, email, password)
+      setUser(userData)
+      navigate('/')
     } catch (err) {
-      setError('Network error. Please try again.')
-      console.error(err)
+      setError(err.message || 'Registration failed')
     } finally {
       setLoading(false)
     }
@@ -87,7 +75,7 @@ function Register({ setUser }) {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              placeholder="••••••••"
+              placeholder="--------"
             />
           </div>
 
@@ -99,7 +87,7 @@ function Register({ setUser }) {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
-              placeholder="••••••••"
+              placeholder="--------"
             />
           </div>
 

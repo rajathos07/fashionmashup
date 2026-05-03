@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
+import { productAPI } from '../services/api'
 import './Products.css'
 
 function Products() {
+  const [searchParams] = useSearchParams()
   const [products, setProducts] = useState([])
   const [categories, setCategories] = useState([])
   const [filteredProducts, setFilteredProducts] = useState([])
@@ -10,7 +12,7 @@ function Products() {
   const [error, setError] = useState(null)
 
   const [filters, setFilters] = useState({
-    category: '',
+    category: searchParams.get('categoryId') || '',
     priceRange: [0, 500],
     size: '',
     brand: ''
@@ -29,15 +31,8 @@ function Products() {
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch('/api/products', {
-        credentials: 'include'
-      })
-      if (response.ok) {
-        const data = await response.json()
-        setProducts(Array.isArray(data) ? data : [])
-      } else {
-        setError('Failed to fetch products')
-      }
+      const data = await productAPI.getAll()
+      setProducts(Array.isArray(data) ? data : [])
     } catch (err) {
       setError('Error fetching products')
       console.error(err)
@@ -48,13 +43,8 @@ function Products() {
 
   const fetchCategories = async () => {
     try {
-      const response = await fetch('/api/categories', {
-        credentials: 'include'
-      })
-      if (response.ok) {
-        const data = await response.json()
-        setCategories(Array.isArray(data) ? data : [])
-      }
+      const data = await productAPI.getCategories()
+      setCategories(Array.isArray(data) ? data : [])
     } catch (err) {
       console.error('Error fetching categories:', err)
     }
@@ -168,8 +158,8 @@ function Products() {
         <section className="products-main">
           <div className="products-controls">
             <div className="view-options">
-              <button className="view-btn active">⋮⋮</button>
-              <button className="view-btn">⋮⋯</button>
+              <button className="view-btn active">...</button>
+              <button className="view-btn">...</button>
             </div>
             <div className="sort-options">
               <label>Sort by:</label>
@@ -197,7 +187,7 @@ function Products() {
                     <h3>{product.name}</h3>
                     <p className="brand">{product.brand || 'Fashion Mashup'}</p>
                     <p className="price">SAR {product.price.toFixed(2)}</p>
-                    <button className="wishlist-btn">♡</button>
+                    <button className="wishlist-btn">&#9825;</button>
                   </div>
                 </Link>
               ))
