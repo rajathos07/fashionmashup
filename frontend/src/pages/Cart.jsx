@@ -19,17 +19,28 @@ function Cart() {
       setCartItems(data.items || [])
     } catch (err) {
       if (err.message.includes('401') || err.message === 'Not authenticated') {
-        setError('Please login to view your cart')
+        // User not logged in, load local cart
+        const localCart = JSON.parse(localStorage.getItem('localCart') || '[]')
+        setCartItems(localCart)
+        setError(null) // Clear any previous error since we're using local cart
       } else {
         setError('Error loading cart')
+        console.error(err)
       }
-      console.error(err)
     } finally {
       setLoading(false)
     }
   }
 
   const handleRemoveItem = async (cartItemId) => {
+    if (cartItemId.toString().startsWith('local_')) {
+      let localCart = JSON.parse(localStorage.getItem('localCart') || '[]')
+      localCart = localCart.filter(item => item.id !== cartItemId)
+      localStorage.setItem('localCart', JSON.stringify(localCart))
+      setCartItems(localCart)
+      return
+    }
+
     try {
       await cartAPI.removeFromCart(cartItemId)
       fetchCart()
@@ -40,6 +51,18 @@ function Cart() {
 
   const handleQuantityChange = async (cartItemId, newQuantity) => {
     if (newQuantity < 1) return
+
+    if (cartItemId.toString().startsWith('local_')) {
+      let localCart = JSON.parse(localStorage.getItem('localCart') || '[]')
+      const itemIndex = localCart.findIndex(item => item.id === cartItemId)
+      if (itemIndex > -1) {
+        localCart[itemIndex].quantity = newQuantity
+        localStorage.setItem('localCart', JSON.stringify(localCart))
+        setCartItems([...localCart])
+      }
+      return
+    }
+
     try {
       await cartAPI.updateCartItem(cartItemId, newQuantity)
       fetchCart()

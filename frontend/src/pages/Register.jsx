@@ -27,20 +27,37 @@ function Register({ setUser }) {
       const userData = await authAPI.register(name, email, password)
       setUser(userData)
       
+      const localCart = JSON.parse(localStorage.getItem('localCart') || '[]')
+      let syncedCart = false
+      if (localCart.length > 0) {
+        try {
+          for (const item of localCart) {
+            await cartAPI.addToCart(item.productId, item.quantity, item.size)
+          }
+          localStorage.removeItem('localCart')
+          syncedCart = true
+        } catch (e) {
+          console.error('Failed to sync local cart:', e)
+        }
+      }
+      
       const pendingItem = localStorage.getItem('pendingCartItem')
       if (pendingItem) {
         try {
           const { productId, quantity, size } = JSON.parse(pendingItem)
           await cartAPI.addToCart(productId, quantity, size)
           localStorage.removeItem('pendingCartItem')
-          navigate('/cart')
-          return
+          syncedCart = true
         } catch (e) {
           console.error('Failed to add pending item:', e)
         }
       }
       
-      navigate('/')
+      if (syncedCart) {
+        navigate('/cart')
+      } else {
+        navigate('/')
+      }
     } catch (err) {
       setError(err.message || 'Registration failed')
     } finally {

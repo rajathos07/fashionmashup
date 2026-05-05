@@ -41,13 +41,28 @@ function ProductDetails() {
       navigate('/cart')
     } catch (err) {
       if (err.message === 'Not authenticated' || err.message.includes('401')) {
-        // Save pending item to process after login
-        localStorage.setItem('pendingCartItem', JSON.stringify({
-          productId: product.id,
-          quantity,
-          size: selectedSize
-        }))
-        navigate('/login')
+        // Save to local cart for unauthenticated users
+        const localCart = JSON.parse(localStorage.getItem('localCart') || '[]')
+        const existingItem = localCart.find(item => item.productId === product.id && item.size === selectedSize)
+        
+        if (existingItem) {
+          existingItem.quantity += quantity
+        } else {
+          localCart.push({
+            id: 'local_' + Date.now(),
+            productId: product.id,
+            quantity,
+            size: selectedSize,
+            product: product
+          })
+        }
+        
+        localStorage.setItem('localCart', JSON.stringify(localCart))
+        
+        // Remove old pending item logic if it exists
+        localStorage.removeItem('pendingCartItem')
+        
+        navigate('/cart')
       } else {
         alert('Failed to add to cart: ' + err.message)
       }
