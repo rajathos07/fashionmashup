@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { authAPI } from '../services/api'
+import { authAPI, cartAPI } from '../services/api'
 import './Auth.css'
 
 function Login({ setUser }) {
@@ -18,6 +18,20 @@ function Login({ setUser }) {
     try {
       const userData = await authAPI.login(email, password)
       setUser(userData)
+      
+      const pendingItem = localStorage.getItem('pendingCartItem')
+      if (pendingItem) {
+        try {
+          const { productId, quantity, size } = JSON.parse(pendingItem)
+          await cartAPI.addToCart(productId, quantity, size)
+          localStorage.removeItem('pendingCartItem')
+          navigate('/cart')
+          return
+        } catch (e) {
+          console.error('Failed to add pending item:', e)
+        }
+      }
+      
       navigate('/')
     } catch (err) {
       setError(err.message || 'Login failed')

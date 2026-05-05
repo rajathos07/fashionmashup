@@ -53,15 +53,27 @@ public class AddToCartApiServlet extends HttpServlet {
                 cart = cartDAO.getCartByUserId(user.getUserId());
             }
 
-            CartItem item = new CartItem();
-            item.setCartId(cart.getCartId());
-            item.setProductId(productId);
-            item.setSizeLabel(size);
-            item.setQuantity(quantity);
-            item.setUnitPrice(product.getPrice());
-            item.setAddedAt(LocalDateTime.now());
+            // Check if item already exists in cart
+            List<CartItem> existingItems = cartItemDAO.getCartItemsByCartId(cart.getCartId());
+            boolean itemExists = false;
+            for (CartItem existing : existingItems) {
+                if (existing.getProductId() == productId && existing.getSizeLabel().equals(size)) {
+                    cartItemDAO.updateCartItemQuantity(existing.getCartItemId(), existing.getQuantity() + quantity);
+                    itemExists = true;
+                    break;
+                }
+            }
 
-            cartItemDAO.addCartItem(item);
+            if (!itemExists) {
+                CartItem item = new CartItem();
+                item.setCartId(cart.getCartId());
+                item.setProductId(productId);
+                item.setSizeLabel(size);
+                item.setQuantity(quantity);
+                item.setUnitPrice(product.getPrice());
+                item.setAddedAt(LocalDateTime.now());
+                cartItemDAO.addCartItem(item);
+            }
 
             JsonUtil.sendJson(response, Map.of("message", "Item added to cart"));
         } catch (Exception e) {

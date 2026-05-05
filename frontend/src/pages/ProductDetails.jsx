@@ -41,7 +41,12 @@ function ProductDetails() {
       navigate('/cart')
     } catch (err) {
       if (err.message === 'Not authenticated' || err.message.includes('401')) {
-        alert('Please login to add items to cart')
+        // Save pending item to process after login
+        localStorage.setItem('pendingCartItem', JSON.stringify({
+          productId: product.id,
+          quantity,
+          size: selectedSize
+        }))
         navigate('/login')
       } else {
         alert('Failed to add to cart: ' + err.message)
